@@ -1,0 +1,40 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id        String  @id @default(uuid())
+  email     String  @unique
+  firebaseId String @unique // ID del usuario en Firebase
+  recetas   Receta[] // Relación con recetas
+}
+
+model Receta {
+  id          String   @id @default(uuid())
+  nombre      String
+  descripcion String
+  ingredientes String
+  pasos       String
+  categoriaId String
+  categoria   Categoria @relation(fields: [categoriaId], references: [id])
+  usuarioId   String
+  usuario     Usuario  @relation(fields: [usuarioId], references: [id])
+  imagen      String   // Campo para almacenar la imagen en base64
+}
+
+model Categoria {
+  id     String  @id @default(uuid())
+  nombre String  @unique
+  recetas Receta[]
+}
