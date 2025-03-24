@@ -2,7 +2,7 @@
 
 import CardRecipeDb from "@/components/CardRecipeDb";
 import RecipeCard from "@/components/RecipeCard";
-import { checkAuth, getCurrentUserUid } from "@/lib/auth";
+import { checkAuth, getCurrentUserEmail, getCurrentUserUid } from "@/lib/auth";
 import { addReceta, getRecetas } from "@/lib/querys-db";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -17,6 +17,7 @@ const Dashboard = () => {
   const [categoriaId, setCategoriaId] = useState("");
   const [recetas, setRecetas] = useState([]);
   const [formData, setFormData] = useState({ id: "", nombre: "", categoria: "", descripcion: "", imagen: "" });
+  const [userEmail, setUserEmail] = useState("a");
 
   const [loading, setLoading] = useState(true);
   const [image, setImage] = useState(null);
@@ -24,12 +25,14 @@ const Dashboard = () => {
   const router = useRouter();
 
   const handleEditClick = (recipe) => {
-    console.log(recipe,"hola")
+    console.log(recipe, "hola")
     setFormData(recipe);
     setNombre(recipe.nombre);
     setDescripcion(recipe.descripcion);
     setIngredientes(recipe.ingredientes);
     setPasos(recipe.pasos);
+    setCategoriaId(recipe.categoria);
+    setImage(recipe.imagen);
   };
 
   useEffect(() => {
@@ -145,7 +148,7 @@ const Dashboard = () => {
     }
 
     try {
-      let base64Image = formData.image; // Mantiene la imagen actual si no se sube una nueva
+      let base64Image = image // Mantiene la imagen actual si no se sube una nueva
 
       if (imageFile) {
         const reader = new FileReader();
@@ -177,8 +180,10 @@ const Dashboard = () => {
             descripcion,
             ingredientes,
             pasos,
-          })          
-      });
+            categoriaId,
+            image:base64Image
+          })
+        });
       } else {
         // Crear nueva receta
         response = await fetch("/api/recetas", {
@@ -234,9 +239,22 @@ const Dashboard = () => {
   useEffect(() => {
     fetchRecetas()
   }, [])
+
+
+  useEffect(() => {
+    const fetchEmail = async () => {
+      const email = await getCurrentUserEmail();
+      console.log(email,"email")
+      setUserEmail(email);
+    };
+      fetchEmail();
+
+
+  }, []);
+
   return (
     <div className="flex h-screen">
-      {role === "chef" ? (
+      {userEmail == "nelyurihernandez5b@gmail.com" ? (
         <div className="w-full flex">
 
           {/* Sección izquierda: Formulario */}
@@ -359,12 +377,14 @@ const Dashboard = () => {
       ) : (
         <div className="w-full bg-[#fff3f1] flex flex-wrap gap-4 items-start h-full p-6 mb-5">
           <div className="w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-            {mockRecipes.map((recipe) => (
-              <RecipeCard key={recipe.id} recipe={recipe} />
+            {recetas.length > 0 && recetas.map((recipe, index) => (
+              <div key={index}>
+                <RecipeCard key={index} nombre={recipe.nombre} categoria={recipe.categoria.nombre} descripcion={recipe.descripcion} imagen={recipe.imagen} ingredientes={recipe.ingredientes} pasos={recipe.pasos} id={recipe.id} reload={fetchRecetas} onEdit={handleEditClick} />
+
+              </div>
             ))}
           </div>
         </div>
-
       )}
 
 

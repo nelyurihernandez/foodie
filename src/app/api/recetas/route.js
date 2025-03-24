@@ -15,13 +15,13 @@ export async function GET() {
 export async function POST(req) {
     try {
         const { nombre, descripcion, ingredientes, pasos, categoriaId, firebaseId, image } = await req.json();
-        console.log(nombre)
-        console.log(descripcion)
-        console.log(ingredientes)
-        console.log(pasos)
-        console.log(categoriaId)
-        console.log(firebaseId)
-        console.log(image)
+        // console.log(nombre)
+        // console.log(descripcion)
+        // console.log(ingredientes)
+        // console.log(pasos)
+        // console.log(categoriaId)
+        // console.log(firebaseId)
+        // console.log(image)
 
         if (!nombre || !descripcion || !ingredientes || !pasos || !categoriaId || !firebaseId || !image) {
             return Response.json({ error: "Faltan datos obligatorios" }, { status: 400 });
@@ -81,6 +81,8 @@ export async function PUT(req) {
         console.log(ingredientes,"holu")
         console.log(pasos,"oli")
         console.log(categoriaId,"holoo")
+        console.log(image,"imageeee")
+
         const recetaExistente = await prisma.receta.findUnique({
             where: { id: id },
         });
@@ -89,15 +91,35 @@ export async function PUT(req) {
             return Response.json({ error: "La receta no existe" }, { status: 404 });
         }
 
+        // Buscar la categoría por su nombre
+        let categoria = await prisma.categoria.findUnique({
+            where: { nombre: categoriaId },
+            select: { id: true }
+        });
+        
+        // Si la categoría no existe, crearla
+        if (!categoria) {
+            categoria = await prisma.categoria.create({
+            data: { nombre: categoriaId },
+            select: { id: true }
+            });
+        }
+        
+        // Actualizar la receta con la categoría encontrada o creada
         const recetaActualizada = await prisma.receta.update({
             where: { id: id },
             data: {
-                nombre,
-                descripcion,
-                ingredientes,
-                pasos,
+            nombre,
+            descripcion,
+            ingredientes,
+            pasos,
+            categoria: {
+                connect: { id: categoria.id }
             },
+            imagen:image
+            }
         });
+          
 
         return Response.json({ message: "Receta actualizada correctamente", receta: recetaActualizada }, { status: 200 });
     } catch (error) {

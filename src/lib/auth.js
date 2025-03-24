@@ -44,6 +44,7 @@ export const login = async (email, password) => {
 export const logOut = async () => {
   try {
     await signOut(auth);
+    localStorage.removeItem("userEmail");
   } catch (error) {
     throw new Error(error.message);
   }
@@ -58,5 +59,12 @@ export const getCurrentUserUid = () => {
   return auth.currentUser ? auth.currentUser.uid : null;
 };
 export const getCurrentUserEmail = () => {
-  return auth.currentUser ? auth.currentUser.email : null;
+  if (auth.currentUser) {
+    const email = auth.currentUser.email;
+    localStorage.setItem("userEmail", email); // Guardar en localStorage
+    return email;
+  } 
+
+  return localStorage.getItem("userEmail"); // Si no hay usuario en Firebase, intenta obtenerlo de localStorage
 };
+
