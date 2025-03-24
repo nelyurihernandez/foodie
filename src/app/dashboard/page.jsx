@@ -216,16 +216,6 @@ const Dashboard = () => {
     setImageFile(null);
   };
 
-  const fetchRecetas = async () => {
-    try {
-      const response = await fetch("/api/recetas");
-      const data = await response.json();
-      console.log(data, "recetas")
-      setRecetas(data);
-    } catch (error) {
-      console.error("Error al obtener recetas:", error);
-    }
-  };
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
